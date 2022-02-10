@@ -1,0 +1,11 @@
+.hide{
+  display: none;
+}
+.search__options div{
+  font-size: 20px;
+  line-height: 20px;
+}
+.search__options div:hover{
+  background-color: grey;
+  cursor: pointer;
+}

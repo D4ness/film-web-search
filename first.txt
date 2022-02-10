@@ -1,0 +1,45 @@
+const API_KEY = '4a7965f18c6bd8ca506ff75e45baaefa';
+// const URL = 'https://api.themoviedb.org/3/movie/popular?api_key=4a7965f18c6bd8ca506ff75e45baaefa&language=ru-RU&page=1';
+const urlStart = 'https://api.themoviedb.org/3/search/movie?api_key=4a7965f18c6bd8ca506ff75e45baaefa&language=ru-RU&query=';
+const urlEnd = '&page=1&include_adult=false';
+    
+    
+function sendRequest(url) {
+    return fetch(url)
+        .then(response => {
+            return response.json()
+        })
+}
+
+let films = [];
+let film_num = 0;
+sendRequest(URL)
+    .then(response => {
+        response.results.forEach(film => films[film_num++] = film['title'])
+    })
+
+document.querySelector('.search-text').oninput = function () {
+    try {
+        document.querySelector('.search-wrapper').remove()
+    } catch (err){
+    }
+    const text = this.value.trim();
+    let wrapper = document.createElement("div");
+    if (text !== '') {
+        wrapper.className = 'search-wrapper'
+        document.body.append(wrapper);
+        for (let item of films) {
+            if (item.search(text) !== -1) {
+                let block = document.createElement("div");
+                block.textContent = item;
+                wrapper.append(block);
+                console.log(item);
+
+            } else {
+                // wrapper.remove()
+            }
+        }
+    } else {
+        wrapper.remove()
+    }
+}
