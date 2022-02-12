@@ -4,12 +4,11 @@ const urlParams = `api_key=${API_KEY}&language=ru-RU`
 
 function sendRequest(url) {
     return fetch(url)
-        .then(response => {
-            return response.json()
-        })
+        .then(response => response.json())
 }
 
 function showFilmInfo(elem) {
+    console.log(elem)
     document.querySelectorAll('.search__options div').forEach(block => block.classList.add('hide'));
     const url = `${urlStart}movie/${elem.id}?${urlParams}`;
     sendRequest(url)
@@ -29,31 +28,29 @@ function showFilmInfo(elem) {
 }
 
 function addFilmInStorage(title, id) {
-    let new_list = JSON.parse(localStorage.getItem("film_list"));
-    new_list[title] = id;
-    localStorage.setItem('film_list', JSON.stringify(new_list));
+    let newList = JSON.parse(localStorage.getItem("film_list"));
+    newList[title] = id;
+    localStorage.setItem('film_list', JSON.stringify(newList));
 }
 
 function makeFilmBlock(num, film, check) {
     let block = document.querySelector(`.search__options_${num}`);
-    // console.log(block);
     block.classList.remove('hide');
     block.id = film['id']
     block.style = '';
-    block.onclick = function () {
-        showFilmInfo(block);
-    };
+    // block.onclick = showFilmInfo;  // Не смог понять, можно ли здесь использовать bind()
+    block.onclick = () => showFilmInfo(block);  // Не смог понять, можно ли здесь использовать bind()
     block.textContent = `${film['title']}, ${film['release_date'].slice(0, 4)} г.`;
     if (check) block.style = 'color: red;'
 }
 
 function makeStorageList(text) {
-    let film_count = 0;
+    let filmCount = 0;
     let usedFilms = [];
     const storage = JSON.parse(localStorage.getItem('film_list'));
     const storageFilms = Object.keys(storage);
-    if ((film_count < 5) && (storageFilms.some(title => title.toLowerCase().search(text.toLowerCase()) !== -1))) {
-        film_count++;
+    if ((filmCount < 5) && (storageFilms.some(title => title.toLowerCase().search(text.toLowerCase()) !== -1))) {
+        filmCount++;
         storageFilms.map(film => {
             if (film.toLowerCase().search(text.toLowerCase()) !== -1) {
                 const id = storage[film];
@@ -61,13 +58,11 @@ function makeStorageList(text) {
                 usedFilms.push(film);
                 sendRequest(url)
                     .then(info => {
-                        makeFilmBlock(film_count, info, true);
-                        film_count++;
+                        makeFilmBlock(filmCount, info, true);
+                        filmCount++;
                     })
             }
         })
-
-        // console.log('up', film_count);
     } else {
         console.log('non')
     }
@@ -75,25 +70,19 @@ function makeStorageList(text) {
 }
 
 function showSearchList(films, text) {
+    // Обертка для 2 функций: 1* составление списка из Storage
+    // 2* составление остальной части списка из  общей базы данных
     let BreakException = {};
     document.querySelector('.film').classList.add('hide');
     document.querySelector('.search__options').classList.remove('hide')
-
-    const usedFilms = makeStorageList(text);
-    let film_count = usedFilms.length;
-        console.log(film_count, usedFilms[0],usedFilms)
+    const usedFilms = makeStorageList(text);        // 1*
+    let filmCount = usedFilms.length;
     try { // Вместо break, которого нет для forEach, чтобы не перебирать список фильмов после 10 в списке
         films.forEach(film => {
-            // usedFilms.some(item => {
-            //     console.log('z',item); return item === film['title']})
-            usedFilms.forEach(item => console.log(item));
-
-            if ((film['title'].toLowerCase().search(text.toLowerCase()) !== -1) && !(usedFilms.some(item => item === film['title']))) {
-
-                // console.log('yes', film_count, film)
-                // let block = document.createElement("div");
-                if (film_count++ < 10) {
-                    makeFilmBlock(film_count, film, false);
+            if ((film['title'].toLowerCase().search(text.toLowerCase()) !== -1)
+                && !(usedFilms.some(item => item === film['title']))) {
+                if (filmCount++ < 10) {
+                    makeFilmBlock(filmCount, film, false); // 2*
                 } else {
                     throw BreakException;
                 }
@@ -104,7 +93,17 @@ function showSearchList(films, text) {
     }
 }
 
-document.querySelector('.search__input').oninput = function () {
+let emptyStorage = true;
+try {
+    let newList = JSON.parse(localStorage.getItem("film_list"));
+    if (newList) emptyStorage = false;
+} catch (err) {
+}
+if (emptyStorage) {
+    let filmList = {'Example': 123}
+    localStorage.setItem('film_list', JSON.stringify(filmList));
+}
+document.querySelector('.search__input').oninput = function () {    // Основная функция, на ввод символа
     const text = this.value.trim();
     if (text !== '') {
         let url = `${urlStart}search/movie?${urlParams}&query=${text}`;
