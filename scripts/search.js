@@ -7,64 +7,68 @@ function sendRequest(url) {
         .then(response => response.json())
 }
 
-function showFilmInfo(elem) {
-    console.log(elem)
-    document.querySelectorAll('.search__options div').forEach(block => block.classList.add('hide'));
+function showFilmInfo(elem, className, check) {
+    if (check) {
+        document.querySelector('.search__options').classList.add('hide');
+        document.querySelector(`${className}`).classList.remove('hide');
+    }
     const url = `${urlStart}movie/${elem.id}?${urlParams}`;
     sendRequest(url)
         .then(info => {
-            document.querySelector('.search__input').value = info['title'];
-            const block = document.querySelector('.film');
+            if (check) document.querySelector('.search__input').value = info.title;
+            const block = document.querySelector(`${className}`);
             block.classList.remove('hide');
-            block.innerHTML =
-                `
-                <div class="film__tittle">${info['title']}, ${info['release_date'].slice(0, 4)} год</div>
-                <div class="film__genre">Жанры: ${info['genres'].map(genre => ` ${genre.name}`)}</div>
+            block.innerHTML = `
+                <div class="film__title">${info.title}, ${info.release_date.slice(0, 4)} год</div>
+                <div class="film__genre">Жанры: ${info.genres.map(genre => ` ${genre.name}`)}</div>
                 <div class="film__description">${info['overview']}</div>
-                <div class="film__popularity">Популярность: ${info['popularity']}</div>
+                <div class="film__popularity">Популярность: <b>${info['popularity']}</b></div>
                 `;
-            addFilmInStorage(info['title'], info['id']);
+            if (check) addFilmInStorage(info.title, info.id, info.release_date);
         })
 }
 
-function addFilmInStorage(title, id) {
-    let newList = JSON.parse(localStorage.getItem("film_list"));
-    newList[title] = id;
-    localStorage.setItem('film_list', JSON.stringify(newList));
+function addFilmInStorage(title, id, date) {
+    const newFilmList = JSON.parse(localStorage.getItem("film_list"));
+    newFilmList[title] = {id: id, release_date: date, title: title};
+    localStorage.setItem('film_list', JSON.stringify(newFilmList));
+    const lastFilms = JSON.parse(localStorage.getItem("last_films"));
+    lastFilms[lastFilmsCounter++ % 3] = {id: id, release_date: date, title: title};
+    localStorage.setItem('last_films', JSON.stringify(lastFilms));
+    changeLastFilms();
 }
 
-function makeFilmBlock(num, film, check) {
-    let block = document.querySelector(`.search__options_${num}`);
-    block.classList.remove('hide');
+function makeFilmDivBlock(num, film, check) {
+    document.querySelector('.search__options').classList.remove('hide');
+    let block = document.querySelector(`.search__option_${num}`);
     block.id = film['id']
     block.style = '';
     // block.onclick = showFilmInfo;  // Не смог понять, можно ли здесь использовать bind()
-    block.onclick = () => showFilmInfo(block);  // Не смог понять, можно ли здесь использовать bind()
-    block.textContent = `${film['title']}, ${film['release_date'].slice(0, 4)} г.`;
-    if (check) block.style = 'color: red;'
+    block.onclick = () => showFilmInfo(block, `.film`, true);
+    block.textContent = `${film.title}, ${film.release_date.slice(0, 4)} г.`;
+    if (check) block.style = 'color: #5291F8; text-decoration: underline'
 }
 
-function makeStorageList(text) {
+function compareTitle(storageFilms, text) {
+    return storageFilms.some(title => title.toLowerCase().search(text.toLowerCase()) !== -1)
+}
+
+function makeListFromStorage(text) {
     let filmCount = 0;
     let usedFilms = [];
     const storage = JSON.parse(localStorage.getItem('film_list'));
     const storageFilms = Object.keys(storage);
-    if ((filmCount < 5) && (storageFilms.some(title => title.toLowerCase().search(text.toLowerCase()) !== -1))) {
+    if ((filmCount < 5) && compareTitle(storageFilms, text)) {
         filmCount++;
         storageFilms.map(film => {
             if (film.toLowerCase().search(text.toLowerCase()) !== -1) {
                 const id = storage[film];
                 const url = `${urlStart}movie/${id}?${urlParams}`;
                 usedFilms.push(film);
-                sendRequest(url)
-                    .then(info => {
-                        makeFilmBlock(filmCount, info, true);
-                        filmCount++;
-                    })
+                makeFilmDivBlock(filmCount, storage[film], true);
+                filmCount++;
             }
         })
-    } else {
-        console.log('non')
     }
     return usedFilms
 }
@@ -75,14 +79,13 @@ function showSearchList(films, text) {
     let BreakException = {};
     document.querySelector('.film').classList.add('hide');
     document.querySelector('.search__options').classList.remove('hide')
-    const usedFilms = makeStorageList(text);        // 1*
+    const usedFilms = makeListFromStorage(text);        // 1*
     let filmCount = usedFilms.length;
     try { // Вместо break, которого нет для forEach, чтобы не перебирать список фильмов после 10 в списке
         films.forEach(film => {
-            if ((film['title'].toLowerCase().search(text.toLowerCase()) !== -1)
-                && !(usedFilms.some(item => item === film['title']))) {
+            if ((film['title'].toLowerCase().search(text.toLowerCase()) !== -1) && !(usedFilms.some(item => item === film['title']))) {
                 if (filmCount++ < 10) {
-                    makeFilmBlock(filmCount, film, false); // 2*
+                    makeFilmDivBlock(filmCount, film, false); // 2*
                 } else {
                     throw BreakException;
                 }
@@ -100,9 +103,30 @@ try {
 } catch (err) {
 }
 if (emptyStorage) {
-    let filmList = {'Example': 123}
+    let filmList = {'$': {id: 123, release_date: 'some_date'}};
     localStorage.setItem('film_list', JSON.stringify(filmList));
+    let lastFilms = {0: {id: 1, release_date: 'some_date', title: 'title'}};
+    localStorage.setItem('last_films', JSON.stringify(lastFilms));
 }
+
+const lastFilms = [
+    {id: 102899, release_date: 'some_date1', title: 'title1'},
+    {id: 43685, release_date: 'some_date2', title: 'title2'},
+    {id: 640146, release_date: 'some_date3', title: 'title3'}];
+let lastFilmsCounter = 0;
+
+function changeLastFilms() {
+    let blockIndex = 1;
+    const lastFilms = JSON.parse(localStorage.getItem("last_films"));
+    console.log(lastFilms)
+    Object.values(lastFilms).map(film =>
+        showFilmInfo(film, `.last-film_${blockIndex++}`, false));
+}
+
+changeLastFilms();
+
+window.addEventListener('storage', () => changeLastFilms());
+
 document.querySelector('.search__input').oninput = function () {    // Основная функция, на ввод символа
     const text = this.value.trim();
     if (text !== '') {
@@ -112,6 +136,6 @@ document.querySelector('.search__input').oninput = function () {    // Осно�
                 showSearchList(response.results, text);
             })
     } else {
-        document.querySelector('.search__options').classList.add('hide')
+        document.querySelector('.search__options').classList.add('hide');
     }
 }

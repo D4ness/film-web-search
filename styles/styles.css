@@ -1,11 +1,107 @@
-.hide{
-  display: none;
+*,
+*:after,
+*:before {
+    box-sizing: border-box;
+    margin: 0 0 0 0;
 }
-.search__options div{
-  font-size: 20px;
-  line-height: 20px;
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #20232A;
+    color: #8AB4F8;
+    display: flex;
 }
-.search__options div:hover{
-  background-color: grey;
-  cursor: pointer;
+
+.hide {
+    display: none;
+}
+
+.main {
+    min-height: 100vh;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+h1 {
+    padding: 30px;
+    font-size: 30px;
+}
+
+.search {
+    display: flex;
+    justify-content: center;
+    height: 40px;
+    width: 100%;
+    /*margin-bottom: 20px;*/
+}
+
+.search__input {
+    padding-left: 10px;
+    font-size: 18px;
+    height: 40px;
+    line-height: 25px;
+    width: 50%;
+    color: #8AB4F8;
+    background-color: #20232A;
+    background-clip: padding-box;
+    border: 1px solid #bdbdbd;
+    border-radius: 2px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.search__options{
+    padding: 10px;
+    border: 1px solid #bdbdbd;
+    border-radius: 2px;
+    border-top: 0px;
+    width: 50%;
+}
+
+.search__options div {
+    font-size: 20px;
+    line-height: 20px;
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.search__options div:hover {
+    background-color: rgba(180,206,248, 0.2);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.film {
+padding: 20px;
+}
+.film div{
+    padding-bottom: 5px;
+}
+.film__title{
+    color: #5291F8;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.last-options{
+    width: 20%;
+    font-size: 12px;
+}
+
+.last-options__tittle{
+    font-size: 20px;
+    color: #5291F8;
+}
+
+.last-film .film__title{
+    font-size: 14px;
+}
+
+.last-film{
+    padding: 5px 0;
+    border-bottom: 1px solid #5291F8;
+}
+.last-film:last-child{
+    border-bottom: none;
 }

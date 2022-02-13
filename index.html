@@ -5,26 +5,55 @@
     <title>Web-Search</title>
     <script defer src="scripts/search.js"></script>
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
 </head>
 <body>
-<div class="search">
-    <input class="search__input" type="text" placeholder="Введите название чего-то">
-</div>
-<div class="search__options">
-    <div class="search__options_1"></div>
-    <div class="search__options_2"></div>
-    <div class="search__options_3"></div>
-    <div class="search__options_4"></div>
-    <div class="search__options_5"></div>
-    <div class="search__options_6"></div>
-    <div class="search__options_7"></div>
-    <div class="search__options_8"></div>
-    <div class="search__options_9"></div>
-    <div class="search__options_10"></div>
-</div>
-<div class="film hide">
-
-</div>
-</body>
+<section class="main">
+        <h1>Поиск фильмов</h1>
+        <div class="search">
+            <input class="search__input" type="text" placeholder="Введите название фильма">
+        </div>
+        <div class="search__options hide">
+            <div class="search__option search__option_1"></div>
+            <div class="search__option search__option_2"></div>
+            <div class="search__option search__option_3"></div>
+            <div class="search__option search__option_4"></div>
+            <div class="search__option search__option_5"></div>
+            <div class="search__option search__option_6"></div>
+            <div class="search__option search__option_7"></div>
+            <div class="search__option search__option_8"></div>
+            <div class="search__option search__option_9"></div>
+            <div class="search__option search__option_10"></div>
+        </div>
+        <div class="film hide">
+            <div class="film__title"></div>
+            <div class="film__genre"></div>
+            <div class="film__description"></div>
+            <div class="film__popularity"></div>
+        </div>
+</section>
+<section class="last-options">
+    <div class="last-options__tittle">Последние выбранные варианты</div>
+    <div class="last-film last-film_1">
+        <div class="film__title"></div>
+        <div class="film__genre"></div>
+        <div class="film__description"></div>
+        <div class="film__popularity"></div>
+    </div>
+    <div class="last-film last-film_2">
+        <div class="film__title"></div>
+        <div class="film__genre"></div>
+        <div class="film__description"></div>
+        <div class="film__popularity"></div>
+    </div>
+    <div class="last-film last-film_3">
+        <div class="film__title"></div>
+        <div class="film__genre"></div>
+        <div class="film__description"></div>
+        <div class="film__popularity"></div>
+    </div>
+</section>
 </body>
 </html>
