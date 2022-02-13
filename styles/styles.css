@@ -51,7 +51,7 @@ h1 {
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.search__options{
+.search__options {
     padding: 10px;
     border: 1px solid #bdbdbd;
     border-radius: 2px;
@@ -67,41 +67,44 @@ h1 {
 }
 
 .search__options div:hover {
-    background-color: rgba(180,206,248, 0.2);
+    background-color: rgba(180, 206, 248, 0.2);
     border-radius: 2px;
     cursor: pointer;
 }
 
 .film {
-padding: 20px;
+    padding: 20px;
 }
-.film div{
+
+.film div {
     padding-bottom: 5px;
 }
-.film__title{
+
+.film__title {
     color: #5291F8;
     font-size: 25px;
     font-weight: 600;
 }
 
-.last-options{
+.last-options {
     width: 20%;
     font-size: 12px;
 }
 
-.last-options__tittle{
+.last-options__tittle {
     font-size: 20px;
     color: #5291F8;
 }
 
-.last-film .film__title{
+.last-film .film__title {
     font-size: 14px;
 }
 
-.last-film{
+.last-film {
     padding: 5px 0;
     border-bottom: 1px solid #5291F8;
 }
-.last-film:last-child{
+
+.last-film:last-child {
     border-bottom: none;
 }

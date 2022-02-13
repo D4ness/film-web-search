@@ -4,7 +4,7 @@ const urlParams = `api_key=${API_KEY}&language=ru-RU`
 
 function sendRequest(url) {
     return fetch(url)
-        .then(response => response.json())
+        .then(response => response.json());
 }
 
 function showFilmInfo(elem, className, check) {
@@ -41,12 +41,12 @@ function addFilmInStorage(title, id, date) {
 function makeFilmDivBlock(num, film, check) {
     document.querySelector('.search__options').classList.remove('hide');
     let block = document.querySelector(`.search__option_${num}`);
-    block.id = film['id']
+    block.id = film.id
     block.style = '';
     // block.onclick = showFilmInfo;  // Не смог понять, можно ли здесь использовать bind()
     block.onclick = () => showFilmInfo(block, `.film`, true);
     block.textContent = `${film.title}, ${film.release_date.slice(0, 4)} г.`;
-    if (check) block.style = 'color: #5291F8; text-decoration: underline'
+    if (check) block.style = 'color: #5291F8; text-decoration: underline';
 }
 
 function compareTitle(storageFilms, text) {
@@ -58,14 +58,12 @@ function makeListFromStorage(text) {
     let usedFilms = [];
     const storage = JSON.parse(localStorage.getItem('film_list'));
     const storageFilms = Object.keys(storage);
-    if ((filmCount < 5) && compareTitle(storageFilms, text)) {
-        filmCount++;
+    if (compareTitle(storageFilms, text)) {
         storageFilms.map(film => {
-            if (film.toLowerCase().search(text.toLowerCase()) !== -1) {
+            if ((film.toLowerCase().search(text.toLowerCase()) !== -1)&&(filmCount<5)) {
                 const id = storage[film];
-                const url = `${urlStart}movie/${id}?${urlParams}`;
                 usedFilms.push(film);
-                makeFilmDivBlock(filmCount, storage[film], true);
+                makeFilmDivBlock(filmCount+1, storage[film], true);
                 filmCount++;
             }
         })
@@ -97,9 +95,10 @@ function showSearchList(films, text) {
 }
 
 let emptyStorage = true;
+let lastOptionIsHide = true;
 try {
     let newList = JSON.parse(localStorage.getItem("film_list"));
-    if (newList) emptyStorage = false;
+    if (Object.keys(newList).length > 1) emptyStorage = false;
 } catch (err) {
 }
 if (emptyStorage) {
@@ -107,23 +106,21 @@ if (emptyStorage) {
     localStorage.setItem('film_list', JSON.stringify(filmList));
     let lastFilms = {0: {id: 1, release_date: 'some_date', title: 'title'}};
     localStorage.setItem('last_films', JSON.stringify(lastFilms));
+} else {
+    changeLastFilms();
+    document.querySelector('.last-options').classList.remove('hide');
+    lastOptionIsHide = false;
 }
 
-const lastFilms = [
-    {id: 102899, release_date: 'some_date1', title: 'title1'},
-    {id: 43685, release_date: 'some_date2', title: 'title2'},
-    {id: 640146, release_date: 'some_date3', title: 'title3'}];
 let lastFilmsCounter = 0;
 
 function changeLastFilms() {
     let blockIndex = 1;
     const lastFilms = JSON.parse(localStorage.getItem("last_films"));
-    console.log(lastFilms)
     Object.values(lastFilms).map(film =>
         showFilmInfo(film, `.last-film_${blockIndex++}`, false));
+    if (lastOptionIsHide) document.querySelector('.last-options').classList.remove('hide');
 }
-
-changeLastFilms();
 
 window.addEventListener('storage', () => changeLastFilms());
 
