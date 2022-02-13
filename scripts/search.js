@@ -55,7 +55,7 @@ function clearSearchList() {
 }
 
 function compareTitle(storageFilms, query) {
-    return storageFilms.some(title => title.toLowerCase().search(query) !== -1)
+    return storageFilms.some(title => title.toLowerCase().search(query.toLowerCase()) !== -1)
 }
 
 function makeListFromStorage(query) {
@@ -63,11 +63,13 @@ function makeListFromStorage(query) {
     let usedFilms = [];
     const storage = JSON.parse(localStorage.getItem('film_list'));
     const storageFilms = Object.keys(storage);
+    console.log('storage', storageFilms, query);
     if (compareTitle(storageFilms, query)) {
         storageFilms.map(film => {
             if ((film.toLowerCase().search(query) !== -1) && (filmCount < 5)) {
                 const id = storage[film];
                 usedFilms.push(film);
+                console.log('sto2', film, filmCount)
                 makeFilmDivBlock(filmCount + 1, storage[film], true);
                 filmCount++;
             }
@@ -83,11 +85,15 @@ function showSearchList(films, query) {
     document.querySelector('.search__options').classList.remove('hide')
     const usedFilms = makeListFromStorage(query);        // 1*
     let filmCount = usedFilms.length;
+    console.log(films, Object.values(usedFilms));
     for (let film of films) {
         if ((film['title'].toLowerCase().search(query) !== -1)) {
-            if (filmCount++ < 10) {
+            console.log(filmCount, film.title, !(compareTitle(Object.values(usedFilms), film['title'])))
+            if ((filmCount <= 10)&&!(compareTitle(Object.values(usedFilms), film['title']))) {
+                console.log('yes');
+                filmCount++;
                 makeFilmDivBlock(filmCount, film, false); // 2*
-            } else {
+            } else if (filmCount > 10) {
                 break
             }
         }
