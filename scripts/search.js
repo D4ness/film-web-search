@@ -49,6 +49,12 @@ function makeFilmDivBlock(num, film, check) {
     if (check) block.style = 'color: #5291F8; text-decoration: underline';
 }
 
+function clearSearchList() {
+    document.querySelectorAll('.search__option').forEach(block => {
+        block.textContent = '';
+    });
+}
+
 function compareTitle(storageFilms, text) {
     return storageFilms.some(title => title.toLowerCase().search(text.toLowerCase()) !== -1)
 }
@@ -60,10 +66,10 @@ function makeListFromStorage(text) {
     const storageFilms = Object.keys(storage);
     if (compareTitle(storageFilms, text)) {
         storageFilms.map(film => {
-            if ((film.toLowerCase().search(text.toLowerCase()) !== -1)&&(filmCount<5)) {
+            if ((film.toLowerCase().search(text.toLowerCase()) !== -1) && (filmCount < 5)) {
                 const id = storage[film];
                 usedFilms.push(film);
-                makeFilmDivBlock(filmCount+1, storage[film], true);
+                makeFilmDivBlock(filmCount + 1, storage[film], true);
                 filmCount++;
             }
         })
@@ -81,7 +87,7 @@ function showSearchList(films, text) {
     let filmCount = usedFilms.length;
     try { // Вместо break, которого нет для forEach, чтобы не перебирать список фильмов после 10 в списке
         films.forEach(film => {
-            if ((film['title'].toLowerCase().search(text.toLowerCase()) !== -1) && !(usedFilms.some(item => item === film['title']))) {
+            if ((film['title'].toLowerCase().search(text.toLowerCase()) !== -1)) {
                 if (filmCount++ < 10) {
                     makeFilmDivBlock(filmCount, film, false); // 2*
                 } else {
@@ -126,6 +132,7 @@ window.addEventListener('storage', () => changeLastFilms());
 
 document.querySelector('.search__input').oninput = function () {    // Основная функция, на ввод символа
     const text = this.value.trim();
+    clearSearchList();
     if (text !== '') {
         let url = `${urlStart}search/movie?${urlParams}&query=${text}`;
         sendRequest(url)
