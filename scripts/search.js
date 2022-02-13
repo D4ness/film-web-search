@@ -33,7 +33,7 @@ function addFilmInStorage(title, id, date) {
     newFilmList[title] = {id: id, release_date: date, title: title};
     localStorage.setItem('film_list', JSON.stringify(newFilmList));
     const lastFilms = JSON.parse(localStorage.getItem("last_films"));
-    lastFilms[lastFilmsCounter++ % 3] = {id: id, release_date: date, title: title};
+    lastFilms[lastFilmsCounter++ % 3] = {id, release_date: date, title};
     localStorage.setItem('last_films', JSON.stringify(lastFilms));
     changeLastFilms();
 }
@@ -43,7 +43,6 @@ function makeFilmDivBlock(num, film, check) {
     let block = document.querySelector(`.search__option_${num}`);
     block.id = film.id
     block.style = '';
-    // block.onclick = showFilmInfo;  // Не смог понять, можно ли здесь использовать bind()
     block.onclick = () => showFilmInfo(block, `.film`, true);
     block.textContent = `${film.title}, ${film.release_date.slice(0, 4)} г.`;
     if (check) block.style = 'color: #5291F8; text-decoration: underline';
@@ -55,18 +54,18 @@ function clearSearchList() {
     });
 }
 
-function compareTitle(storageFilms, text) {
-    return storageFilms.some(title => title.toLowerCase().search(text.toLowerCase()) !== -1)
+function compareTitle(storageFilms, query) {
+    return storageFilms.some(title => title.toLowerCase().search(query) !== -1)
 }
 
-function makeListFromStorage(text) {
+function makeListFromStorage(query) {
     let filmCount = 0;
     let usedFilms = [];
     const storage = JSON.parse(localStorage.getItem('film_list'));
     const storageFilms = Object.keys(storage);
-    if (compareTitle(storageFilms, text)) {
+    if (compareTitle(storageFilms, query)) {
         storageFilms.map(film => {
-            if ((film.toLowerCase().search(text.toLowerCase()) !== -1) && (filmCount < 5)) {
+            if ((film.toLowerCase().search(query) !== -1) && (filmCount < 5)) {
                 const id = storage[film];
                 usedFilms.push(film);
                 makeFilmDivBlock(filmCount + 1, storage[film], true);
@@ -77,26 +76,21 @@ function makeListFromStorage(text) {
     return usedFilms
 }
 
-function showSearchList(films, text) {
+function showSearchList(films, query) {
     // Обертка для 2 функций: 1* составление списка из Storage
     // 2* составление остальной части списка из  общей базы данных
-    let BreakException = {};
     document.querySelector('.film').classList.add('hide');
     document.querySelector('.search__options').classList.remove('hide')
-    const usedFilms = makeListFromStorage(text);        // 1*
+    const usedFilms = makeListFromStorage(query);        // 1*
     let filmCount = usedFilms.length;
-    try { // Вместо break, которого нет для forEach, чтобы не перебирать список фильмов после 10 в списке
-        films.forEach(film => {
-            if ((film['title'].toLowerCase().search(text.toLowerCase()) !== -1)) {
-                if (filmCount++ < 10) {
-                    makeFilmDivBlock(filmCount, film, false); // 2*
-                } else {
-                    throw BreakException;
-                }
+    for (let film of films) {
+        if ((film['title'].toLowerCase().search(query) !== -1)) {
+            if (filmCount++ < 10) {
+                makeFilmDivBlock(filmCount, film, false); // 2*
+            } else {
+                break
             }
-        })
-    } catch (err) {
-        if (err !== BreakException) throw err;
+        }
     }
 }
 
@@ -131,13 +125,13 @@ function changeLastFilms() {
 window.addEventListener('storage', () => changeLastFilms());
 
 document.querySelector('.search__input').oninput = function () {    // Основная функция, на ввод символа
-    const text = this.value.trim();
+    const query = this.value.trim().toLowerCase();
     clearSearchList();
-    if (text !== '') {
-        let url = `${urlStart}search/movie?${urlParams}&query=${text}`;
+    if (query !== '') {
+        let url = `${urlStart}search/movie?${urlParams}&query=${query}`;
         sendRequest(url)
             .then(response => {
-                showSearchList(response.results, text);
+                showSearchList(response.results, query);
             })
     } else {
         document.querySelector('.search__options').classList.add('hide');
