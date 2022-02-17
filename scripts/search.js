@@ -4,7 +4,14 @@ const urlParams = `api_key=${API_KEY}&language=ru-RU`
 
 function sendRequest(url) {
     return fetch(url)
-        .then(response => response.json());
+        .then(response => {
+            if (response.status === 200) {
+                return response.json();
+            } else {
+                throw 'No valid Response';
+            }
+        })
+        .catch(err => console.log(err));
 }
 
 function showFilmInfo(elem, className, check) {
@@ -29,12 +36,20 @@ function showFilmInfo(elem, className, check) {
 }
 
 function addFilmInStorage(title, id, date) {
-    const newFilmList = JSON.parse(localStorage.getItem("film_list"));
-    newFilmList[title] = {id: id, release_date: date, title: title};
-    localStorage.setItem('film_list', JSON.stringify(newFilmList));
-    const lastFilms = JSON.parse(localStorage.getItem("last_films"));
-    lastFilms[lastFilmsCounter++ % 3] = {id, release_date: date, title};
-    localStorage.setItem('last_films', JSON.stringify(lastFilms));
+    try {
+        const newFilmList = JSON.parse(localStorage.getItem("film_list"));
+        newFilmList[title] = {id: id, release_date: date, title: title};
+        localStorage.setItem('film_list', JSON.stringify(newFilmList));
+    } catch (err) {
+        console.log(err);
+    }
+    try {
+        const lastFilms = JSON.parse(localStorage.getItem("last_films"));
+        lastFilms[lastFilmsCounter++ % 3] = {id, release_date: date, title};
+        localStorage.setItem('last_films', JSON.stringify(lastFilms));
+    } catch (err) {
+        console.log(err);
+    }
     changeLastFilms();
 }
 
@@ -59,18 +74,16 @@ function compareTitle(storageFilms, query) {
 }
 
 function makeListFromStorage(query) {
-    let filmCount = 0;
+    let filmCount = 1;
     let usedFilms = [];
     const storage = JSON.parse(localStorage.getItem('film_list'));
     const storageFilms = Object.keys(storage);
-    console.log('storage', storageFilms, query);
     if (compareTitle(storageFilms, query)) {
         storageFilms.map(film => {
-            if ((film.toLowerCase().search(query) !== -1) && (filmCount < 5)) {
+            if ((film.toLowerCase().search(query) !== -1) && (filmCount <= 5)) {
                 const id = storage[film];
                 usedFilms.push(film);
-                console.log('sto2', film, filmCount)
-                makeFilmDivBlock(filmCount + 1, storage[film], true);
+                makeFilmDivBlock(filmCount, storage[film], true);
                 filmCount++;
             }
         })
@@ -84,17 +97,14 @@ function showSearchList(films, query) {
     document.querySelector('.film').classList.add('hide');
     document.querySelector('.search__options').classList.remove('hide')
     const usedFilms = makeListFromStorage(query);        // 1*
-    let filmCount = usedFilms.length;
-    console.log(films, Object.values(usedFilms));
+    let filmCount = usedFilms.length+1;
     for (let film of films) {
         if ((film['title'].toLowerCase().search(query) !== -1)) {
-            console.log(filmCount, film.title, !(compareTitle(Object.values(usedFilms), film['title'])))
-            if ((filmCount <= 10)&&!(compareTitle(Object.values(usedFilms), film['title']))) {
-                console.log('yes');
-                filmCount++;
+            if ((filmCount <= 10) && !(compareTitle(Object.values(usedFilms), film['title']))) {
                 makeFilmDivBlock(filmCount, film, false); // 2*
+                filmCount++;
             } else if (filmCount > 10) {
-                break
+                break;
             }
         }
     }
@@ -106,6 +116,7 @@ try {
     let newList = JSON.parse(localStorage.getItem("film_list"));
     if (Object.keys(newList).length > 1) emptyStorage = false;
 } catch (err) {
+    console.log(err);
 }
 if (emptyStorage) {
     let filmList = {'$': {id: 123, release_date: 'some_date'}};
@@ -130,8 +141,8 @@ function changeLastFilms() {
 
 window.addEventListener('storage', () => changeLastFilms());
 
-document.querySelector('.search__input').oninput = function () {    // Основная функция, на ввод символа
-    const query = this.value.trim().toLowerCase();
+const search = function (event) {    // Основная функция, на ввод символа
+    const query = event.target.value.trim().toLowerCase();
     clearSearchList();
     if (query !== '') {
         let url = `${urlStart}search/movie?${urlParams}&query=${query}`;
@@ -143,3 +154,15 @@ document.querySelector('.search__input').oninput = function () {    // Осно�
         document.querySelector('.search__options').classList.add('hide');
     }
 }
+
+function debounce(callback) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(callback, 1000, ...args);
+    };
+}
+
+const debounceSearch = debounce(search, 800);
+
+document.querySelector('.search__input').addEventListener('input', debounceSearch);
